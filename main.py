@@ -45,7 +45,7 @@ stopwordlist = ['a', 'about', 'above', 'after', 'again', 'ain', 'all', 'am', 'an
              'through', 'to', 'too','under', 'until', 'up', 've', 'very', 'was',
              'we', 'were', 'what', 'when', 'where','which','while', 'who', 'whom',
              'why', 'will', 'with', 'won', 'y', 'you', "youd","youll", "youre",
-             "youve", 'your', 'yours', 'yourself', 'yourselves']
+             "youve", 'your', 'yours', 'yourself', 'yourselves', 'rt']
 
 
 def preprocess(textdata):
@@ -60,15 +60,15 @@ def preprocess(textdata):
     seqReplacePattern = r"\1\1"
 
     for tweet in textdata:
+        #
         tweet = tweet.lower()
-
         # Replace all URls with 'URL'
-        tweet = re.sub(urlPattern, ' URL', tweet)
+        tweet = re.sub(urlPattern, ' ', tweet)
         # Replace all emojis.
         for emoji in emojis.keys():
-            tweet = tweet.replace(emoji, "EMOJI" + emojis[emoji])
+            tweet = tweet.replace(emoji, emojis[emoji])
             # Replace @USERNAME to 'USER'.
-        tweet = re.sub(userPattern, ' USER', tweet)
+        tweet = re.sub(userPattern, ' ', tweet)
         # Replace all non alphabets.
         tweet = re.sub(alphaPattern, " ", tweet)
         # Replace 3 or more consecutive letters by 2 letter.
@@ -84,25 +84,21 @@ def preprocess(textdata):
 
     return processedText
 
-import time
-t = time.time()
+
 processedText = preprocess(tweet)
-print(f'Text Preprocessing complete.')
-print(f'Time Taken: {round(time.time()-t)} seconds')
 
-
+# Data splitting
 X_train, X_test, y_train, y_test = train_test_split(processedText, label,
                                                     test_size = 0.2, random_state = 0)
-print(f'Data Split done.')
 
+# Data transformation
 vectoriser = TfidfVectorizer(ngram_range=(1,2), max_features=500000)
 vectoriser.fit(X_train)
 
 X_train = vectoriser.transform(X_train)
 X_test  = vectoriser.transform(X_test)
-print(f'Data Transformed.')
 
-
+# Modelling
 def model_Evaluate(model):
     # Predict values for Test dataset
     y_pred = model.predict(X_test)
@@ -163,17 +159,18 @@ def predict(vectoriser, model, tweet):
     df = df.replace([-1,0,1], ['Negative','Neutral','Positive'])
     return df
 
-
 if __name__ == "__main__":
-    # Loading the models.
-    # vectoriser, LRmodel = load_models()
 
+    input("Enter a Hashtag or word")
+    dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\covid19_tweets.csv',
+                          sep=',')
+
+    dataset = dataset[['text']]
+    text = list(dataset['text'])
     # Text to classify should be in a list.
-    text = ["I hate twitter",
-            "May the Force be with you.",
-            "Mr. Stark, I don't feel so good.",
-            "It is a phone.",
-            "Please check this version."]
 
-    df = predict(vectoriser, LRmodel, text)
-    print(df.head())
+    preprocess(text)
+    processedText=preprocess(text)
+
+    df = predict(vectoriser, LRmodel, processedText)
+    print(df)
