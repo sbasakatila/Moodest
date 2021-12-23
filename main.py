@@ -15,12 +15,13 @@ from sklearn.linear_model import LogisticRegression
 dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\Corona_NLP_train.csv',
                       sep="," ,encoding="ISO-8859-1")
 
-# Removing the unnecessary columns.
+# Removing the unnecessary columns
 dataset = dataset[['OriginalTweet','Sentiment']]
 
-# Storing data in lists.
+# Storing data in lists
 tweet, label = list(dataset['OriginalTweet']), list(dataset['Sentiment'])
 
+# Defining emojis
 emojis = {':)': 'smile', ':-)': 'smile', ';d': 'wink', ':-E': 'vampire', ':(': 'sad',
           ':-(': 'sad', ':-<': 'sad', ':P': 'raspberry', ':O': 'surprised',
           ':-@': 'shocked', ':@': 'shocked',':-$': 'confused', ':\\': 'annoyed',
@@ -29,7 +30,7 @@ emojis = {':)': 'smile', ':-)': 'smile', ';d': 'wink', ':-E': 'vampire', ':(': '
           '<(-_-)>': 'robot', 'd[-_-]b': 'dj', ":'-)": 'sadsmile', ';)': 'wink',
           ';-)': 'wink', 'O:-)': 'angel','O*-)': 'angel','(:-D': 'gossip', '=^.^=': 'cat'}
 
-## Defining set containing all stopwords in english.
+# Defining set containing stopwords in english
 stopwordlist = ['a', 'about', 'above', 'after', 'again', 'ain', 'all', 'am', 'an',
              'and','any','are', 'as', 'at', 'be', 'because', 'been', 'before',
              'being', 'below', 'between','both', 'by', 'can', 'd', 'did', 'do',
@@ -60,18 +61,20 @@ def preprocess(textdata):
     seqReplacePattern = r"\1\1"
 
     for tweet in textdata:
-        #
+        # String
+        tweet = str(tweet)
+        # Lowers letters
         tweet = tweet.lower()
-        # Replace all URls with 'URL'
+        # Replace all URls with ' '
         tweet = re.sub(urlPattern, ' ', tweet)
-        # Replace all emojis.
+        # Replace all emojis
         for emoji in emojis.keys():
             tweet = tweet.replace(emoji, emojis[emoji])
-            # Replace @USERNAME to 'USER'.
+        # Replace @USERNAME to ' '.
         tweet = re.sub(userPattern, ' ', tweet)
-        # Replace all non alphabets.
+        # Replace all non alphabets
         tweet = re.sub(alphaPattern, " ", tweet)
-        # Replace 3 or more consecutive letters by 2 letter.
+        # Replace repeating letters by 2 letters
         tweet = re.sub(sequencePattern, seqReplacePattern, tweet)
         # Checking stopwords and Lemmatizing
         tweetwords = ''
@@ -162,23 +165,51 @@ def predict(vectoriser, model, tweet):
 
 if __name__ == "__main__":
 
-    input("Enter a Hashtag or word")
-    dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\Workflow 154325 - twitter-698589.csv',
-                          sep=',')
+    platform=input('''       Select a platform
+            1) TWITTER
+            2) REDDIT''')
 
-    dataset = dataset[['text']]
-    text = list(dataset['text'])
-    # Text to classify should be in a list.
+    if platform=='1':
+        input("Enter a Hashtag or word")
+        dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\Workflow 154325 - twitter-698589.csv',
+                              sep=',')
 
-    preprocess(text)
-    processedText=preprocess(text)
+        dataset = dataset[['text']]
+        text = list(dataset['text'])
+        # Text to classify should be in a list.
 
-    df = predict(vectoriser, LRmodel, processedText)
+        preprocess(text)
+        processedText = preprocess(text)
 
-    plt.figure(figsize=(10, 5))
-    sns.countplot(x='label', data=df,
-                  order=['Extremely Negative','Negative','Neutral','Positive','Extremely Positive'])
-    plt.title("Sentiment")
-    plt.ylabel("Count", fontsize=12)
-    plt.xlabel("Sentiments", fontsize=12)
-    plt.show()
+        df = predict(vectoriser, LRmodel, processedText)
+
+        plt.figure(figsize=(10, 5))
+        sns.countplot(x='label', data=df,
+                      order=['Extremely Negative', 'Negative', 'Neutral', 'Positive', 'Extremely Positive'])
+        plt.title("Sentiment")
+        plt.ylabel("Count", fontsize=12)
+        plt.xlabel("Sentiments", fontsize=12)
+        plt.show()
+
+    elif platform=='2':
+
+        input("Enter a Hashtag or word")
+        dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\coronavirus_reddit_clean_comments.csv',
+                              sep=',')
+
+        dataset = dataset[['comment']]
+        text = list(dataset['comment'])
+        # Text to classify should be in a list.
+
+        preprocess(text)
+        processedText = preprocess(text)
+
+        df = predict(vectoriser, LRmodel, processedText)
+
+        plt.figure(figsize=(10, 5))
+        sns.countplot(x='label', data=df,
+                      order=['Extremely Negative', 'Negative', 'Neutral', 'Positive', 'Extremely Positive'])
+        plt.title("Sentiment")
+        plt.ylabel("Count", fontsize=12)
+        plt.xlabel("Sentiments", fontsize=12)
+        plt.show()
