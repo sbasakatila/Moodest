@@ -92,7 +92,7 @@ X_train, X_test, y_train, y_test = train_test_split(processedText, label,
                                                     test_size = 0.2, random_state = 0)
 
 # Data transformation
-vectoriser = TfidfVectorizer(ngram_range=(1,2), max_features=500000)
+vectoriser = TfidfVectorizer(ngram_range=(1,1), max_features=500000)
 vectoriser.fit(X_train)
 
 X_train = vectoriser.transform(X_train)
