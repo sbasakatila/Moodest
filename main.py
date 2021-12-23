@@ -12,7 +12,7 @@ from sklearn.linear_model import LogisticRegression
 
 
 # Dataset = id,tweet,label
-dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\Moodest2\TrainingData.csv',
+dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\TrainingData.csv',
                       sep="," ,encoding="ISO-8859-1")
 
 # Removing the unnecessary columns.
@@ -120,6 +120,7 @@ def model_Evaluate(model):
     plt.ylabel("Actual values", fontdict={'size': 14}, labelpad=10)
     plt.title("Confusion Matrix", fontdict={'size': 18}, pad=20)
 
+
 LRmodel = LogisticRegression(C = 3, max_iter = 1000, n_jobs=-1)
 LRmodel.fit(X_train, y_train)
 
@@ -162,7 +163,7 @@ def predict(vectoriser, model, tweet):
 if __name__ == "__main__":
 
     input("Enter a Hashtag or word")
-    dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\covid19_tweets.csv',
+    dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\Workflow 154325 - twitter-698589.csv',
                           sep=',')
 
     dataset = dataset[['text']]
@@ -173,4 +174,11 @@ if __name__ == "__main__":
     processedText=preprocess(text)
 
     df = predict(vectoriser, LRmodel, processedText)
-    print(df)
+
+    plt.figure(figsize=(10, 5))
+    sns.countplot(x='label', data=df,
+                  order=['Negative', 'Neutral', 'Positive'])
+    plt.title("Sentiment")
+    plt.ylabel("Count", fontsize=12)
+    plt.xlabel("Sentiments", fontsize=12)
+    plt.show()
