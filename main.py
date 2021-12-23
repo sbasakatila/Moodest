@@ -12,14 +12,14 @@ from sklearn.linear_model import LogisticRegression
 
 
 # Dataset = id,tweet,label
-dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\TrainingData.csv',
+dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\Corona_NLP_train.csv',
                       sep="," ,encoding="ISO-8859-1")
 
 # Removing the unnecessary columns.
-dataset = dataset[['tweet','label']]
+dataset = dataset[['OriginalTweet','Sentiment']]
 
 # Storing data in lists.
-tweet, label = list(dataset['tweet']), list(dataset['label'])
+tweet, label = list(dataset['OriginalTweet']), list(dataset['Sentiment'])
 
 emojis = {':)': 'smile', ':-)': 'smile', ';d': 'wink', ':-E': 'vampire', ':(': 'sad',
           ':-(': 'sad', ':-<': 'sad', ':P': 'raspberry', ':O': 'surprised',
@@ -106,7 +106,7 @@ def model_Evaluate(model):
     # Compute and plot the Confusion matrix
     cf_matrix = confusion_matrix(y_test, y_pred)
 
-    categories = ['Negative','Neutral','Positive']
+    categories = ['Extremely Negative','Negative','Neutral','Positive','Extremely Positive']
     group_names = ['True Neg', 'False Pos', 'False Neg', 'True Pos']
     group_percentages = ['{0:.2%}'.format(value) for value in cf_matrix.flatten() / np.sum(cf_matrix)]
 
@@ -121,7 +121,7 @@ def model_Evaluate(model):
     plt.title("Confusion Matrix", fontdict={'size': 18}, pad=20)
 
 
-LRmodel = LogisticRegression(C = 3, max_iter = 1000, n_jobs=-1)
+LRmodel = LogisticRegression(C = 5, max_iter = 1000, n_jobs=-1)
 LRmodel.fit(X_train, y_train)
 
 model_Evaluate(LRmodel)
@@ -157,7 +157,7 @@ def predict(vectoriser, model, tweet):
 
     # Convert the list into a Pandas DataFrame.
     df = pd.DataFrame(data, columns=['tweet', 'label'])
-    df = df.replace([-1,0,1], ['Negative','Neutral','Positive'])
+    df = df.replace([-1,0,1,2,3], ['Extremely Negative','Negative','Neutral','Positive','Extremely Positive'])
     return df
 
 if __name__ == "__main__":
@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
     plt.figure(figsize=(10, 5))
     sns.countplot(x='label', data=df,
-                  order=['Negative', 'Neutral', 'Positive'])
+                  order=['Extremely Negative','Negative','Neutral','Positive','Extremely Positive'])
     plt.title("Sentiment")
     plt.ylabel("Count", fontsize=12)
     plt.xlabel("Sentiments", fontsize=12)
