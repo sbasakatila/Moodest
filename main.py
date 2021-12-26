@@ -179,18 +179,17 @@ if __name__ == "__main__":
 
     elif platform=='2':
 
-        input("Enter a Hashtag or word")
+        input('''       We are currently only able to show data related to Covid-19.
+                    Please press enter to continue.''')
+        print("Loading...")
         dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\coronavirus_reddit_clean_comments.csv',
                               sep=',')
 
         dataset = dataset[['comment']]
         text = list(dataset['comment'])
 
-        word=input("Enter a Hashtag or word")
         preprocess(text)
         processedText = preprocess(text)
-        processedText = [s for s in processedText if word in s]
-
 
         df = predict(vectoriser, LRmodel, processedText)
 
@@ -206,8 +205,6 @@ if __name__ == "__main__":
         sentence=[]
         text=input("Please enter a sentence:")
         sentence.append(text)
-        preprocess(sentence)
-        processedText = preprocess(sentence)
 
-        df = predict(vectoriser, LRmodel, processedText)
+        df = predict(vectoriser, LRmodel, sentence)
         print(df.head())
