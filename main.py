@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.linear_model import LogisticRegression
-
+from gensim.parsing.preprocessing import remove_stopwords
 
 # Dataset = id,tweet,label
 dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\Corona_NLP_train.csv',
@@ -29,24 +29,6 @@ emojis = {':)': 'smile', ':-)': 'smile', ';d': 'wink', ':-E': 'vampire', ':(': '
           '@@': 'eyeroll', ':-!': 'confused', ':-D': 'smile', ':-0': 'yell', 'O.o': 'confused',
           '<(-_-)>': 'robot', 'd[-_-]b': 'dj', ":'-)": 'sadsmile', ';)': 'wink',
           ';-)': 'wink', 'O:-)': 'angel','O*-)': 'angel','(:-D': 'gossip', '=^.^=': 'cat'}
-
-# Defining set containing stopwords in english
-stopwordlist = ['a', 'about', 'above', 'after', 'again', 'ain', 'all', 'am', 'an',
-             'and','any','are', 'as', 'at', 'be', 'because', 'been', 'before',
-             'being', 'below', 'between','both', 'by', 'can', 'd', 'did', 'do',
-             'does', 'doing', 'down', 'during', 'each','few', 'for', 'from',
-             'further', 'had', 'has', 'have', 'having', 'he', 'her', 'here',
-             'hers', 'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in',
-             'into','is', 'it', 'its', 'itself', 'just', 'll', 'm', 'ma',
-             'me', 'more', 'most','my', 'myself', 'now', 'o', 'of', 'on', 'once',
-             'only', 'or', 'other', 'our', 'ours','ourselves', 'out', 'own', 're',
-             's', 'same', 'she', "shes", 'should', "shouldve",'so', 'some', 'such',
-             't', 'than', 'that', "thatll", 'the', 'their', 'theirs', 'them',
-             'themselves', 'then', 'there', 'these', 'they', 'this', 'those',
-             'through', 'to', 'too','under', 'until', 'up', 've', 'very', 'was',
-             'we', 'were', 'what', 'when', 'where','which','while', 'who', 'whom',
-             'why', 'will', 'with', 'won', 'y', 'you', "youd","youll", "youre",
-             "youve", 'your', 'yours', 'yourself', 'yourselves', 'rt']
 
 
 def preprocess(textdata):
@@ -83,7 +65,9 @@ def preprocess(textdata):
                 word = wordLemm.lemmatize(word)
                 tweetwords += (word + ' ')
 
-        processedText.append(tweetwords)
+        tweet = remove_stopwords(tweetwords)
+
+        processedText.append(tweet)
 
     return processedText
 
@@ -95,7 +79,7 @@ X_train, X_test, y_train, y_test = train_test_split(processedText, label,
                                                     test_size = 0.2, random_state = 0)
 
 # Data transformation
-vectoriser = TfidfVectorizer(ngram_range=(1,1), max_features=500000)
+vectoriser = TfidfVectorizer(ngram_range=(1,2), max_features=500000)
 vectoriser.fit(X_train)
 
 X_train = vectoriser.transform(X_train)
@@ -167,25 +151,27 @@ if __name__ == "__main__":
 
     platform=input('''       Select a platform
             1) TWITTER
-            2) REDDIT''')
+            2) REDDIT
+            3) Sentence''')
 
     if platform=='1':
-        input("Enter a Hashtag or word")
         dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\Workflow 154325 - twitter-698589.csv',
                               sep=',')
 
         dataset = dataset[['text']]
         text = list(dataset['text'])
-        # Text to classify should be in a list.
 
+        word=input("Enter a Hashtag or word")
         preprocess(text)
         processedText = preprocess(text)
+        processedText = [s for s in processedText if word in s]
+
 
         df = predict(vectoriser, LRmodel, processedText)
 
         plt.figure(figsize=(10, 5))
         sns.countplot(x='label', data=df,
-                      order=['Extremely Negative', 'Negative', 'Neutral', 'Positive', 'Extremely Positive'])
+                            order=['Extremely Negative', 'Negative', 'Neutral', 'Positive', 'Extremely Positive'])
         plt.title("Sentiment")
         plt.ylabel("Count", fontsize=12)
         plt.xlabel("Sentiments", fontsize=12)
@@ -199,10 +185,12 @@ if __name__ == "__main__":
 
         dataset = dataset[['comment']]
         text = list(dataset['comment'])
-        # Text to classify should be in a list.
 
+        word=input("Enter a Hashtag or word")
         preprocess(text)
         processedText = preprocess(text)
+        processedText = [s for s in processedText if word in s]
+
 
         df = predict(vectoriser, LRmodel, processedText)
 
@@ -213,3 +201,13 @@ if __name__ == "__main__":
         plt.ylabel("Count", fontsize=12)
         plt.xlabel("Sentiments", fontsize=12)
         plt.show()
+
+    elif platform=='3':
+        sentence=[]
+        text=input("Please enter a sentence:")
+        sentence.append(text)
+        preprocess(sentence)
+        processedText = preprocess(sentence)
+
+        df = predict(vectoriser, LRmodel, processedText)
+        print(df.head())
