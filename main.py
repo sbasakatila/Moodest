@@ -11,26 +11,27 @@ from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.linear_model import LogisticRegression
 from gensim.parsing.preprocessing import remove_stopwords
 
-# Dataset = id,tweet,label
+# Dataset = UserName,ScreenName,Location,TweetAt,OriginalTweet,Sentiment
 dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\Corona_NLP_train.csv',
-                      sep="," ,encoding="ISO-8859-1")
+                      sep=",", encoding="ISO-8859-1")
 
-# Removing the unnecessary columns
-dataset = dataset[['OriginalTweet','Sentiment']]
+# Gereksiz kolonları kaldır
+dataset = dataset[['OriginalTweet', 'Sentiment']]
 
-# Storing data in lists
+# Datayı listeleştirme
 tweet, label = list(dataset['OriginalTweet']), list(dataset['Sentiment'])
 
-# Defining emojis
+# Emojileri tanımla
 emojis = {':)': 'smile', ':-)': 'smile', ';d': 'wink', ':-E': 'vampire', ':(': 'sad',
           ':-(': 'sad', ':-<': 'sad', ':P': 'raspberry', ':O': 'surprised',
-          ':-@': 'shocked', ':@': 'shocked',':-$': 'confused', ':\\': 'annoyed',
+          ':-@': 'shocked', ':@': 'shocked', ':-$': 'confused', ':\\': 'annoyed',
           ':#': 'mute', ':X': 'mute', ':^)': 'smile', ':-&': 'confused', '$_$': 'greedy',
           '@@': 'eyeroll', ':-!': 'confused', ':-D': 'smile', ':-0': 'yell', 'O.o': 'confused',
           '<(-_-)>': 'robot', 'd[-_-]b': 'dj', ":'-)": 'sadsmile', ';)': 'wink',
-          ';-)': 'wink', 'O:-)': 'angel','O*-)': 'angel','(:-D': 'gossip', '=^.^=': 'cat'}
+          ';-)': 'wink', 'O:-)': 'angel', 'O*-)': 'angel', '(:-D': 'gossip', '=^.^=': 'cat'}
 
 
+# Data temizlemek için fonksiyon
 def preprocess(textdata):
     processedText = []
     wordLemm = WordNetLemmatizer()
@@ -43,7 +44,7 @@ def preprocess(textdata):
     seqReplacePattern = r"\1\1"
 
     for tweet in textdata:
-        # String
+        # Stringe çevir
         tweet = str(tweet)
         # Lowers letters
         tweet = tweet.lower()
@@ -74,16 +75,17 @@ def preprocess(textdata):
 
 processedText = preprocess(tweet)
 
-# Data splitting
+# Data bölümlendirmesi
 X_train, X_test, y_train, y_test = train_test_split(processedText, label,
-                                                    test_size = 0.2, random_state = 0)
+                                                    test_size=0.2, random_state=0)
 
-# Data transformation
-vectoriser = TfidfVectorizer(ngram_range=(1,2), max_features=500000)
+# Data dönüşümü, vektöre çeviriyoruz
+vectoriser = TfidfVectorizer(ngram_range=(1, 2), max_features=500000)
 vectoriser.fit(X_train)
 
 X_train = vectoriser.transform(X_train)
-X_test  = vectoriser.transform(X_test)
+X_test = vectoriser.transform(X_test)
+
 
 # Modelling
 def model_Evaluate(model):
@@ -93,7 +95,7 @@ def model_Evaluate(model):
     # Compute and plot the Confusion matrix
     cf_matrix = confusion_matrix(y_test, y_pred)
 
-    categories = ['Extremely Negative','Negative','Neutral','Positive','Extremely Positive']
+    categories = ['Extremely Negative', 'Negative', 'Neutral', 'Positive', 'Extremely Positive']
     group_names = ['True Neg', 'False Pos', 'False Neg', 'True Pos']
     group_percentages = ['{0:.2%}'.format(value) for value in cf_matrix.flatten() / np.sum(cf_matrix)]
 
@@ -108,18 +110,17 @@ def model_Evaluate(model):
     plt.title("Confusion Matrix", fontdict={'size': 18}, pad=20)
 
 
-LRmodel = LogisticRegression(C = 5, max_iter = 1000, n_jobs=-1)
+LRmodel = LogisticRegression(C=5, max_iter=1000, n_jobs=-1)
 LRmodel.fit(X_train, y_train)
 
 model_Evaluate(LRmodel)
 
-file = open('vectoriser-ngram-(1,2).pickle','wb')
+file = open('vectoriser-ngram-(1,2).pickle', 'wb')
 pickle.dump(vectoriser, file)
 file.close()
 
 
 def load_models():
-
     # Load the vectoriser.
     file = open(r'C:\Users\W10USER\PycharmProjects\Moodest2\vectoriser-ngram-(1,2).pickle', 'rb')
     vectoriser = pickle.load(file)
@@ -132,6 +133,7 @@ def load_models():
     return vectoriser, LRmodel
 
 
+# Öngörü fonksiyonu
 def predict(vectoriser, model, tweet):
     # Predict the sentiment
     textdata = vectoriser.transform(preprocess(tweet))
@@ -144,67 +146,75 @@ def predict(vectoriser, model, tweet):
 
     # Convert the list into a Pandas DataFrame.
     df = pd.DataFrame(data, columns=['tweet', 'label'])
-    df = df.replace([-1,0,1,2,3], ['Extremely Negative','Negative','Neutral','Positive','Extremely Positive'])
+    df = df.replace([-1, 0, 1, 2, 3], ['Extremely Negative', 'Negative', 'Neutral', 'Positive', 'Extremely Positive'])
     return df
 
+
 if __name__ == "__main__":
+    key = 0
+    while key == 0:
+        platform = input('''       Select a platform
+                1) TWITTER
+                2) REDDIT
+                3) Sentence
 
-    platform=input('''       Select a platform
-            1) TWITTER
-            2) REDDIT
-            3) Sentence''')
+                Press 9 for quit.''')
 
-    if platform=='1':
-        dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\Workflow 154325 - twitter-698589.csv',
-                              sep=',')
+        if platform == '9':
+            print("See you later...")
+            break
 
-        dataset = dataset[['text']]
-        text = list(dataset['text'])
+        if platform == '1':
+            dataset = pd.read_csv(
+                r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\Workflow 154325 - twitter-698589.csv',
+                sep=',')
 
-        word=input("Enter a Hashtag or word")
-        preprocess(text)
-        processedText = preprocess(text)
-        processedText = [s for s in processedText if word in s]
+            dataset = dataset[['text']]
+            text = list(dataset['text'])
 
+            word = input("Enter a Hashtag or word")
+            preprocess(text)
+            processedText = preprocess(text)
+            processedText = [s for s in processedText if word in s]
 
-        df = predict(vectoriser, LRmodel, processedText)
+            df = predict(vectoriser, LRmodel, processedText)
 
-        plt.figure(figsize=(10, 5))
-        sns.countplot(x='label', data=df,
-                            order=['Extremely Negative', 'Negative', 'Neutral', 'Positive', 'Extremely Positive'])
-        plt.title("Sentiment")
-        plt.ylabel("Count", fontsize=12)
-        plt.xlabel("Sentiments", fontsize=12)
-        plt.show()
+            plt.figure(figsize=(10, 5))
+            sns.countplot(x='label', data=df,
+                          order=['Extremely Negative', 'Negative', 'Neutral', 'Positive', 'Extremely Positive'])
+            plt.title("Sentiment")
+            plt.ylabel("Count", fontsize=12)
+            plt.xlabel("Sentiments", fontsize=12)
+            plt.show()
 
-    elif platform=='2':
+        elif platform == '2':
 
-        input('''       We are currently only able to show data related to Covid-19.
-                    Please press enter to continue.''')
-        print("Loading...")
-        dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\coronavirus_reddit_clean_comments.csv',
-                              sep=',')
+            input('''       We are currently only able to show data related to Covid-19.
+                        Please press enter to continue.''')
+            print("Loading...")
+            dataset = pd.read_csv(r'C:\Users\W10USER\PycharmProjects\MoodestSentiment\coronavirus_reddit_posts.csv',
+                                  sep=',')
 
-        dataset = dataset[['comment']]
-        text = list(dataset['comment'])
+            dataset = dataset[['body']]
+            text = list(dataset['body'])
 
-        preprocess(text)
-        processedText = preprocess(text)
+            preprocess(text)
+            processedText = preprocess(text)
 
-        df = predict(vectoriser, LRmodel, processedText)
+            df = predict(vectoriser, LRmodel, processedText)
 
-        plt.figure(figsize=(10, 5))
-        sns.countplot(x='label', data=df,
-                      order=['Extremely Negative', 'Negative', 'Neutral', 'Positive', 'Extremely Positive'])
-        plt.title("Sentiment")
-        plt.ylabel("Count", fontsize=12)
-        plt.xlabel("Sentiments", fontsize=12)
-        plt.show()
+            plt.figure(figsize=(10, 5))
+            sns.countplot(x='label', data=df,
+                          order=['Extremely Negative', 'Negative', 'Neutral', 'Positive', 'Extremely Positive'])
+            plt.title("Sentiment")
+            plt.ylabel("Count", fontsize=12)
+            plt.xlabel("Sentiments", fontsize=12)
+            plt.show()
 
-    elif platform=='3':
-        sentence=[]
-        text=input("Please enter a sentence:")
-        sentence.append(text)
+        elif platform == '3':
+            sentence = []
+            text = input("Please enter a sentence:")
+            sentence.append(text)
 
-        df = predict(vectoriser, LRmodel, sentence)
-        print(df.head())
+            df = predict(vectoriser, LRmodel, sentence)
+            print(df.head())
