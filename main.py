@@ -87,12 +87,12 @@ X_train = vectoriser.transform(X_train)
 X_test = vectoriser.transform(X_test)
 
 
-# Modelling
+# Modelleme
 def model_Evaluate(model):
-    # Predict values for Test dataset
+    # Test dataseti için değerleri öngör
     y_pred = model.predict(X_test)
 
-    # Compute and plot the Confusion matrix
+    # Karışıklık matrisini hesapla ve çiz
     cf_matrix = confusion_matrix(y_test, y_pred)
 
     categories = ['Extremely Negative', 'Negative', 'Neutral', 'Positive', 'Extremely Positive']
@@ -101,6 +101,7 @@ def model_Evaluate(model):
 
     labels = [f'{v1}\n{v2}' for v1, v2 in zip(group_names, group_percentages)]
     labels = np.asarray(labels).reshape(2, 2)
+    # array (varsayılan olarak) nesnenin bir kopyasını oluşturur, asarray gerekmedikçe oluşturmaz.
 
     sns.heatmap(cf_matrix, annot=True, cmap='Blues', fmt='',
                 xticklabels=categories, yticklabels=categories)
@@ -139,18 +140,19 @@ def predict(vectoriser, model, tweet):
     textdata = vectoriser.transform(preprocess(tweet))
     label = model.predict(textdata)
 
-    # Make a list of text with sentiment.
+    # Duygu ve Tweetlerden bir liste oluştur
     data = []
     for tweet, pred in zip(tweet, label):
         data.append((tweet, pred))
 
-    # Convert the list into a Pandas DataFrame.
+    # Listeyi pandas dataframeine dönüştür
     df = pd.DataFrame(data, columns=['tweet', 'label'])
     df = df.replace([-1, 0, 1, 2, 3], ['Extremely Negative', 'Negative', 'Neutral', 'Positive', 'Extremely Positive'])
     return df
 
 
 if __name__ == "__main__":
+    # Çıkana kadar programda kalmanı sağlayan while döngüsü
     key = 0
     while key == 0:
         platform = input('''       Select a platform
